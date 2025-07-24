@@ -16,9 +16,9 @@
 /*
   This rule resets the styles for all elements INSIDE the shadow DOM,
   preventing the host page's styles from affecting them.
+  The addition of box-sizing: border-box is key to fixing layout issues.
 */
-#my-auth-extension-container * {
-    all: revert;
+* {
     box-sizing: border-box;
     font-family: inherit;
 }
@@ -34,10 +34,11 @@
     color: #262626;
     font-size: 14px;
     line-height: 1.5;
+    overflow: hidden; /* Prevents children from spilling out */
 }
 
 #auth-app-content {
-    padding: 18px;
+    padding: 20px;
 }
 
 /* --- Headers --- */
@@ -48,6 +49,7 @@
     margin-bottom: 18px;
     border-bottom: 1px solid #efefef;
     padding-bottom: 12px;
+    gap: 10px; /* Adds space between header items */
 }
 #auth-app-content h3 {
     margin: 0;
@@ -57,6 +59,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex-grow: 1; /* Allows the title to take available space */
 }
 #auth-app-content .content-body {
     display: flex;
@@ -95,6 +98,7 @@ a.btn-primary {
     padding: 5px 10px;
     font-size: 12px;
     font-weight: 500;
+    flex-shrink: 0; /* Prevents buttons from shrinking in the header */
 }
 .btn-secondary:hover {
     background-color: #dbdbdb;
@@ -112,8 +116,22 @@ button:disabled:hover {
 /* --- Forms & Text --- */
 .form-field { margin-bottom: 12px; }
 label { display: block; margin-bottom: 4px; font-weight: 500; font-size: 13px; color: #8e8e8e; }
-input { width: calc(100% - 22px); padding: 10px; border: 1px solid #dbdbdb; border-radius: 6px; font-size: 14px; background-color: #fafafa; }
-input:focus { border-color: #a8a8a8; outline: none; }
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #dbdbdb;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: #fafafa;
+}
+input:focus, textarea:focus {
+    border-color: #a8a8a8;
+    outline: none;
+}
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
 p { margin: 0 0 10px; line-height: 1.4; font-size: 14px; color: #8e8e8e; }
 .small-text { font-size: 12px; color: #c7c7c7; text-align: center; }
 a { color: #00376b; text-decoration: none; }
