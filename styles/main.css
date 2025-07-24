@@ -105,11 +105,11 @@ a.btn-primary {
     text-decoration: none;
 }
 .btn-primary {
-    background-color: #0095f6;
+    background-color: #4D6BFF;
     color: white;
 }
 .btn-primary:hover {
-    background-color: #0077c2;
+    background-color: #425bd8;
 }
 .btn-secondary {
     width: auto;

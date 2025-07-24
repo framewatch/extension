@@ -1,9 +1,10 @@
 export function init(status, shadowRoot) {
+
+
     const backBtn = shadowRoot.getElementById('dashboard-back-btn');
     const accountBtn = shadowRoot.getElementById('dashboard-account-btn');
     const closeBtn = shadowRoot.getElementById('dashboard-close-btn');
     const titleEl = shadowRoot.getElementById('dashboard-title');
-
     // Robustness Check: Ensure all header elements were found
     if (!backBtn || !accountBtn || !closeBtn || !titleEl) {
         console.error("Dashboard header elements not found. Aborting init.");
@@ -49,11 +50,13 @@ export function init(status, shadowRoot) {
         const contentContainer = shadowRoot.getElementById('dashboard-content');
         if (!contentContainer) return;
 
-        contentContainer.innerHTML = '';
+        // --- PRELOADER ---
+        contentContainer.innerHTML = '<p style="text-align: center; padding: 20px;">Loading...</p>';
+
         const messageBox = shadowRoot.getElementById('message-box');
         if (messageBox) messageBox.style.display = 'none';
 
-        // --- UPDATED: Header visibility logic ---
+        // --- HEADER VISIBILITY LOGIC ---
         const viewsWithoutBackButton = [
             'features',
             'progress_screen',
@@ -70,7 +73,7 @@ export function init(status, shadowRoot) {
 
         accountBtn.style.display = viewName === 'features' ? 'block' : 'none';
         
-        // Generate dynamic title
+        // --- DYNAMIC TITLE ---
         let newTitle = "Dashboard"; // Default
         if (viewName === 'features') newTitle = 'Features';
         else if (viewName === 'account_details') newTitle = 'Account';
@@ -86,7 +89,7 @@ export function init(status, shadowRoot) {
         try {
             const viewHtmlUrl = chrome.runtime.getURL(`src/views/dashboard/${viewName}/${viewName}.html`);
             const response = await fetch(viewHtmlUrl);
-            if (!response.ok) throw new Error(`Failed to fetch ${viewName}.html`);
+            if (!response.ok) throw new Error(`Failed to fetch ${viewName}.html: ${response.statusText}`);
 
             contentContainer.innerHTML = await response.text();
 
@@ -98,7 +101,8 @@ export function init(status, shadowRoot) {
             }
         } catch (error) {
             console.error(`Error loading sub-view ${viewName}:`, error);
-            contentContainer.innerHTML = `<p class="error">Could not load this section.</p>`;
+            // --- VISIBLE ERROR FALLBACK ---
+            contentContainer.innerHTML = `<div class="feedback error" style="display: block;">Could not load this section. Please try again.</div>`;
         }
     }
 }
