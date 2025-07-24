@@ -1,21 +1,10 @@
 // src/views/dashboard/account_details/account_details.js
 export function init(status, shadowRoot) {
-    const backBtn = shadowRoot.getElementById('back-to-main-btn');
     const logoutBtn = shadowRoot.getElementById('logout-btn-account');
     const welcomeEl = shadowRoot.getElementById('welcome-message');
     const emailEl = shadowRoot.getElementById('account-email');
     const subEl = shadowRoot.getElementById('subscription-status');
 
-    // Add event listener for the "Back" button
-    backBtn?.addEventListener('click', () => {
-        const event = new CustomEvent('change-dashboard-view', {
-            detail: { viewName: 'features' },
-            bubbles: true,
-            composed: true
-        });
-        backBtn.dispatchEvent(event);
-    });
-    
     // Add event listener for the "Logout" button
     logoutBtn?.addEventListener('click', () => handleLogout(logoutBtn));
 

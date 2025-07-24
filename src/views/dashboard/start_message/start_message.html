@@ -1,10 +1,8 @@
 <style>
     .form-section { margin-bottom: 20px; }
     #offer-settings { display: none; padding: 15px; border: 1px dashed #dbdbdb; border-radius: 8px; margin-top: 10px; }
-    /* --- UPDATED: Offer settings layout --- */
     #offer-settings .form-field { display: flex; align-items: center; gap: 15px; margin-bottom: 0;}
     .offer-type-option { display: flex; align-items: center; gap: 5px; }
-    /* --- UPDATED: Textarea styles --- */
     textarea {
         width: calc(100% - 22px);
         min-height: 80px;
@@ -13,11 +11,10 @@
         border-radius: 6px;
         font-size: 14px;
         background-color: #fafafa;
-        resize: none; /* Prevent user from resizing */
-        overflow-y: auto; /* Add scrollbar if content is too long */
+        resize: none;
+        overflow-y: auto;
     }
     
-    /* Toggle Switch Styles */
     .toggle-switch { display: flex; align-items: center; justify-content: space-between; }
     .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
     .switch input { opacity: 0; width: 0; height: 0; }
@@ -27,13 +24,6 @@
     input:checked + .slider:before { transform: translateX(20px); }
 </style>
 <div id="start-message-view">
-    <div class="header">
-        <button id="back-to-main-btn" class="btn-secondary" style="width: auto; padding: 5px 10px;">
-            <svg class="icon-arrow is-left" width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 6.75C13.4142 6.75 13.75 6.41421 13.75 6C13.75 5.58579 13.4142 5.25 13 5.25V6.75ZM0.46967 5.46967C0.176777 5.76256 0.176777 6.23744 0.46967 6.53033L5.24264 11.3033C5.53553 11.5962 6.01041 11.5962 6.3033 11.3033C6.59619 11.0104 6.59619 10.5355 6.3033 10.2426L2.06066 6L6.3033 1.75736C6.59619 1.46447 6.59619 0.989592 6.3033 0.696699C6.01041 0.403806 5.53553 0.403806 5.24264 0.696699L0.46967 5.46967ZM13 6V5.25L1 5.25V6V6.75L13 6.75V6Z"/></svg>
-             Back</button>
-        <h4 style="margin: 0 auto;">Configure Auto Message</h4>
-    </div>
-
     <div style="padding-top: 15px;">
         <div class="form-section">
             <label for="message-text">Message</label>
@@ -52,11 +42,11 @@
             <div id="offer-settings">
                 <div class="form-field">
                     <div class="offer-type-option">
-                        <input type="radio" id="offer-type-percent" name="offer_type" value="%" style="margin: 8px;" checked>
+                        <input type="radio" id="offer-type-percent" name="offer_type" value="%" style="margin: 8px 0;" checked>
                         <label for="offer-type-percent" style="margin: 0;">%</label>
                     </div>
                     <div class="offer-type-option">
-                        <input type="radio" id="offer-type-fixed" name="offer_type" value="$" style="margin: 8px;">
+                        <input type="radio" id="offer-type-fixed" name="offer_type" value="$" style="margin: 8px 0;">
                         <label for="offer-type-fixed" style="margin: 0;">$</label>
                     </div>
                     <input type="number" id="offer-value" placeholder="10" style="width: 80px;">

@@ -1,20 +1,10 @@
 // src/views/dashboard/start_message/start_message.js
 export function init(status, shadowRoot, viewContext) {
-    const backBtn = shadowRoot.getElementById('back-to-main-btn');
     const startBtn = shadowRoot.getElementById('start-auto-message-btn');
     const offerCheckbox = shadowRoot.getElementById('include-offer-checkbox');
     const offerSettingsDiv = shadowRoot.getElementById('offer-settings');
     const messageText = shadowRoot.getElementById('message-text');
     const messageError = shadowRoot.getElementById('message-error');
-
-    // Handle Back button navigation
-    backBtn?.addEventListener('click', () => {
-        const event = new CustomEvent('change-dashboard-view', {
-            detail: { viewName: 'features' },
-            bubbles: true, composed: true
-        });
-        backBtn.dispatchEvent(event);
-    });
 
     // Toggle visibility of offer settings
     offerCheckbox?.addEventListener('change', () => {

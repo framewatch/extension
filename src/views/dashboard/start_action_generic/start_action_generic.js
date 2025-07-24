@@ -2,22 +2,16 @@
 export function init(status, shadowRoot, viewContext) {
     const { featureName } = viewContext;
 
-    const backBtn = shadowRoot.getElementById('back-to-main-btn');
     const startBtn = shadowRoot.getElementById('start-generic-action-btn');
-    const titleEl = shadowRoot.getElementById('action-title');
     const targetInput = shadowRoot.getElementById('target-input');
     const quantityInput = shadowRoot.getElementById('quantity-input'); // Get quantity input
     const targetInputLabel = shadowRoot.getElementById('target-input-label');
-    const targetByLabel = shadowRoot.getElementById('target-by-label');
     const errorEl = shadowRoot.getElementById('generic-action-error'); // Get error element
     const targetTypeRadios = shadowRoot.querySelectorAll('input[name="target_type"]');
 
-    const featureText = featureName === 'autoLikes' ? 'Auto Like' : 'Auto Follow';
     const actionWord = featureName === 'autoLikes' ? 'Like' : 'Follow';
     
-    titleEl.textContent = `Configure ${featureText}`;
-    startBtn.textContent = `Start ${featureText}`;
-    targetByLabel.textContent = `${actionWord} By`;
+    startBtn.textContent = `Start ${actionWord}`;
 
     function updateTargetInput(targetType) {
         if (targetType === 'user') {
@@ -31,14 +25,6 @@ export function init(status, shadowRoot, viewContext) {
 
     targetTypeRadios.forEach(radio => {
         radio.addEventListener('change', () => updateTargetInput(radio.value));
-    });
-
-    backBtn?.addEventListener('click', () => {
-        const event = new CustomEvent('change-dashboard-view', {
-            detail: { viewName: 'features' },
-            bubbles: true, composed: true
-        });
-        backBtn.dispatchEvent(event);
     });
 
     startBtn?.addEventListener('click', () => {
@@ -69,7 +55,7 @@ export function init(status, shadowRoot, viewContext) {
                     actionType: 'finalUpdate',
                     apiResponse: {
                         success: true,
-                        data: { message: `${featureText} action has started.` }
+                        data: { message: `${actionWord} action has started.` }
                     }
                 }
             },

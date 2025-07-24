@@ -1,17 +1,5 @@
-
 // src/views/dashboard/choose_description_type/choose_description_type.js
 export function init(status, shadowRoot, viewContext) {
-    // --- NEW: Back button logic ---
-    const backBtn = shadowRoot.getElementById('back-to-main-btn');
-    backBtn?.addEventListener('click', () => {
-        const event = new CustomEvent('change-dashboard-view', {
-            detail: { viewName: 'features' },
-            bubbles: true, composed: true
-        });
-        backBtn.dispatchEvent(event);
-    });
-    // --- End of new logic ---
-
     const proceedBtn = shadowRoot.getElementById('proceed-to-select-items-btn');
 
     proceedBtn?.addEventListener('click', () => {

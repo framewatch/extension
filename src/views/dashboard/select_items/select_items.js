@@ -1,16 +1,5 @@
 // src/views/dashboard/select_items/select_items.js
 export function init(status, shadowRoot, viewContext) {
-    // --- NEW: Back button logic ---
-    const backBtn = shadowRoot.getElementById('back-to-main-btn');
-    backBtn?.addEventListener('click', () => {
-        const event = new CustomEvent('change-dashboard-view', {
-            detail: { viewName: 'features' },
-            bubbles: true, composed: true
-        });
-        backBtn.dispatchEvent(event);
-    });
-    // --- End of new logic ---
-
     const titleEl = shadowRoot.getElementById('select-items-title');
     if (titleEl && viewContext.featureName) {
         // Example: "Select Items for Auto Likes"
