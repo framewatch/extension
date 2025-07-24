@@ -1,0 +1,55 @@
+<style>
+    #item-image-mock { width: 100%; height: 160px; background-color: #262626; border-radius: 8px; margin-bottom: 15px; border: 3px solid transparent; transition: border-color 0.2s ease-in-out; }
+    /* --- UPDATED STYLE --- */
+    #ai-description-text {
+        min-height: 80px;
+        max-height: 120px; /* Set the maximum height */
+        overflow-y: auto;   /* Add a vertical scrollbar if content overflows */
+        background-color: #fafafa;
+        border: 1px solid #dbdbdb;
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+    .review-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+    .feedback.error { display: block; margin-top: 15px; }
+
+    .navigation-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+    }
+    .nav-arrow-group {
+        display: flex;
+        gap: 8px;
+    }
+    .nav-arrow-group button, .navigation-controls .btn-primary {
+        width: auto;
+        padding: 8px 12px;
+    }
+</style>
+
+<div id="accept-description-view">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h4>Review Description</h4>
+        <span id="item-counter" style="font-size: 14px; color: #8e8e8e;"></span>
+    </div>
+
+    <div id="item-image-mock"></div>
+    <p id="ai-description-text"></p>
+
+    <div class="review-actions">
+        <button id="deny-btn" class="btn-secondary">Deny</button>
+        <button id="accept-btn" class="btn-primary">Accept</button>
+    </div>
+
+    <p id="review-error-message" class="feedback error" style="display: none;"></p>
+
+    <div class="navigation-controls">
+        <div class="nav-arrow-group">
+            <button id="back-btn" class="btn-secondary">&larr;</button> <button id="forward-btn" class="btn-secondary">&rarr;</button> </div>
+        <button id="finish-review-btn" class="btn-primary">Finish Review</button>
+    </div>
+</div>

@@ -1,0 +1,11 @@
+<style>
+    .progress-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; }
+    .progress-bar-wrapper { width: 80%; background-color: #efefef; border-radius: 10px; overflow: hidden; }
+    #progress-bar { width: 0%; height: 15px; background-color: #0095f6; border-radius: 10px; transition: width 0.1s linear; }
+</style>
+<div class="progress-container">
+    <p style="margin-bottom: 15px;">Performing action...</p>
+    <div class="progress-bar-wrapper">
+        <div id="progress-bar"></div>
+    </div>
+</div>

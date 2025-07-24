@@ -1,0 +1,39 @@
+<style>
+    .form-section { margin-bottom: 20px; }
+    .target-type-group { display: flex; gap: 20px; margin-bottom: 15px; }
+</style>
+<div id="start-action-generic-view">
+    <div class="header">
+        <button id="back-to-main-btn" class="btn-secondary" style="width: auto; padding: 5px 10px;">&larr; Back</button>
+        <h4 id="action-title" style="margin: 0 auto;">Configure Action</h4>
+    </div>
+
+    <div style="padding-top: 15px;">
+        <div class="form-section">
+            <label id="target-by-label">Target By</label>
+            <div class="target-type-group">
+                <label style="display: flex; align-items: center; gap: 5px;">
+                    <input type="radio" name="target_type" value="user" checked> User
+                </label>
+                <label style="display: flex; align-items: center; gap: 5px;">
+                    <input type="radio" name="target_type" value="keyword"> Keyword
+                </label>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <label id="target-input-label" for="target-input">Username</label>
+            <input type="text" id="target-input" placeholder="Enter username...">
+        </div>
+
+        <div class="form-section">
+            <label for="quantity-input">Quantity</label>
+            <input type="number" id="quantity-input" value="25" min="1" max="100">
+            <p class="small-text" style="margin-top: 5px;">For safety, keep this under 100.</p>
+        </div>
+        
+        <p id="generic-action-error" class="feedback error" style="display: none; margin-top: -10px; margin-bottom: 15px;"></p>
+
+        <button id="start-generic-action-btn" class="btn-primary">Start</button>
+    </div>
+</div>

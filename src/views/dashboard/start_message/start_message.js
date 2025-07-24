@@ -1,0 +1,60 @@
+// src/views/dashboard/start_message/start_message.js
+export function init(status, shadowRoot, viewContext) {
+    const backBtn = shadowRoot.getElementById('back-to-main-btn');
+    const startBtn = shadowRoot.getElementById('start-auto-message-btn');
+    const offerCheckbox = shadowRoot.getElementById('include-offer-checkbox');
+    const offerSettingsDiv = shadowRoot.getElementById('offer-settings');
+    const messageText = shadowRoot.getElementById('message-text');
+    const messageError = shadowRoot.getElementById('message-error');
+
+    // Handle Back button navigation
+    backBtn?.addEventListener('click', () => {
+        const event = new CustomEvent('change-dashboard-view', {
+            detail: { viewName: 'features' },
+            bubbles: true, composed: true
+        });
+        backBtn.dispatchEvent(event);
+    });
+
+    // Toggle visibility of offer settings
+    offerCheckbox?.addEventListener('change', () => {
+        offerSettingsDiv.style.display = offerCheckbox.checked ? 'block' : 'none';
+    });
+
+    // Handle Start button click
+    startBtn?.addEventListener('click', () => {
+        // --- NEW: Validation Check ---
+        if (messageText.value.trim() === '') {
+            messageError.textContent = 'Message cannot be empty.';
+            messageError.style.display = 'block';
+            return; // Stop the function
+        }
+        
+        // Hide error if validation passes
+        messageError.style.display = 'none';
+
+        // Gather all settings from the form
+        const settings = {
+            message: messageText.value,
+            delay: shadowRoot.getElementById('delay-minutes').value,
+            offer: null
+        };
+
+        if (offerCheckbox.checked) {
+            settings.offer = {
+                type: shadowRoot.querySelector('input[name="offer_type"]:checked').value,
+                value: shadowRoot.getElementById('offer-value').value
+            };
+        }
+
+        // Navigate to the active screen
+        const event = new CustomEvent('change-dashboard-view', {
+            detail: {
+                viewName: 'auto_message_active',
+                context: { settings }
+            },
+            bubbles: true, composed: true
+        });
+        startBtn.dispatchEvent(event);
+    });
+}

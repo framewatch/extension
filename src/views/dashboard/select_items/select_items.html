@@ -1,0 +1,20 @@
+<style>
+    .item-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .item-mock { height: 70px; background-color: #262626; border-radius: 8px; }
+</style>
+<div id="select-items-view">
+    <div class="header">
+        <button id="back-to-main-btn" class="btn-secondary" style="width: auto; padding: 5px 10px;">&larr; Back</button>
+        <h4 style="margin: 0 auto;">Choose Style</h4>
+    </div>
+    <h4 id="select-items-title" style="margin-bottom: 15px;">Select Items</h4>
+    <div class="item-grid">
+        <div class="item-mock"></div>
+        <div class="item-mock"></div>
+        <div class="item-mock"></div>
+        <div class="item-mock"></div>
+        <div class="item-mock"></div>
+        <div class="item-mock"></div>
+    </div>
+    <button id="perform-action-btn" class="btn-primary">Perform Action</button>
+</div>

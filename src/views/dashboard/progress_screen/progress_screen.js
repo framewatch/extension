@@ -1,0 +1,57 @@
+// src/views/dashboard/progress_screen/progress_screen.js
+export async function init(status, shadowRoot, viewContext) {
+    const progressBar = shadowRoot.getElementById('progress-bar');
+    if (!progressBar) return;
+
+    // Animate the progress bar over 2 seconds
+    const duration = 2000;
+    const interval = 20;
+    let progress = 0;
+    const increment = (interval / duration) * 100;
+    const timer = setInterval(() => {
+        progress += increment;
+        progressBar.style.width = `${Math.min(progress, 100)}%`;
+        if (progress >= 100) {
+            clearInterval(timer);
+            setTimeout(finishAction, 200);
+        }
+    }, interval);
+
+    async function finishAction() {
+        let nextViewName;
+        let nextContext = {};
+
+        // --- UPDATED: Simplified Conditional Logic ---
+        if (viewContext.actionType === 'finalUpdate') {
+            // After the final update, go to the finished screen
+            nextViewName = 'action_finished';
+            nextContext = {
+                apiResponse: {
+                    success: true,
+                    data: { message: "All listings have been updated successfully." }
+                }
+            };
+        } else {
+            // This is the initial generation flow for all features
+            const { featureName } = viewContext;
+            const response = await chrome.runtime.sendMessage({
+                type: 'USE_FEATURE',
+                payload: { featureName }
+            });
+
+            if (featureName === 'aiDescriptions') {
+                nextViewName = 'accept_description'; // Go to review screen after generation
+            } else {
+                nextViewName = 'action_finished'; // Go straight to finished screen for other features
+            }
+            nextContext = { apiResponse: response };
+        }
+        
+        const event = new CustomEvent('change-dashboard-view', {
+            detail: { viewName: nextViewName, context: nextContext },
+            bubbles: true,
+            composed: true
+        });
+        shadowRoot.getElementById('dashboard-content').dispatchEvent(event);
+    }
+}
