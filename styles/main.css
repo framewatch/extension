@@ -120,6 +120,7 @@ a.btn-primary {
     font-weight: 500;
     flex-shrink: 0; /* Prevents buttons from shrinking in the header */
     border: 1px solid transparent;
+    display: flex;
 }
 .btn-secondary:hover {
     background-color: #dbdbdb;

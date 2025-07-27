@@ -1,12 +1,15 @@
-// src/views/dashboard/accept_description/accept_description.js
+// Replace all code in src/views/dashboard/accept_description/accept_description.js
+
 export function init(status, shadowRoot, viewContext) {
-    // A fresh list of items each time the view loads
-    const items = [
-        { id: 1, description: "✨ Vintage floral summer dress, perfect for sunny days. Size M. Excellent condition.", choice: null },
-        { id: 2, description: "Classic leather handbag. Timeless design, spacious interior. Minor wear on corners.", choice: null },
-        { id: 3, description: "Men's denim jacket, light wash. A wardrobe essential. Size L. Never worn.", choice: null },
-    ];
+    // Get the items passed from the progress screen
+    const items = viewContext.itemsToReview || [];
     let currentIndex = 0;
+
+    // If there are no items, show an error and stop.
+    if (items.length === 0) {
+        shadowRoot.innerHTML = `<p class="feedback error" style="display: block; margin-top: 20px;">No descriptions were generated to review.</p>`;
+        return;
+    }
 
     const counterEl = shadowRoot.getElementById('item-counter');
     const descriptionEl = shadowRoot.getElementById('ai-description-text');
@@ -21,30 +24,29 @@ export function init(status, shadowRoot, viewContext) {
 
     function renderItem() {
         const item = items[currentIndex];
-        
+
         // Update item details
         counterEl.textContent = `Item ${currentIndex + 1}/${items.length}`;
-        descriptionEl.textContent = item.description;
-        
-        // Update visual feedback based on choice
+        descriptionEl.textContent = item.generatedDescription; // Display the AI description
+
+        // Update visual feedback based on choice (if any)
         imageEl.style.borderColor = item.choice === 'accepted' ? '#0095f6' : (item.choice === 'denied' ? '#ed4956' : 'transparent');
-        
+
         // Update navigation button states
         backBtn.disabled = currentIndex === 0;
         forwardBtn.disabled = currentIndex === items.length - 1;
 
-        // Hide error message on navigation
         errorEl.style.display = 'none';
     }
 
     acceptBtn?.addEventListener('click', () => {
         items[currentIndex].choice = 'accepted';
-        renderItem(); // Re-render to show visual feedback
+        renderItem();
     });
 
     denyBtn?.addEventListener('click', () => {
         items[currentIndex].choice = 'denied';
-        renderItem(); // Re-render to show visual feedback
+        renderItem();
     });
 
     backBtn?.addEventListener('click', () => {
@@ -62,20 +64,22 @@ export function init(status, shadowRoot, viewContext) {
     });
 
     finishBtn?.addEventListener('click', () => {
-        // Find the first item that hasn't been accepted or denied
-        const unselectedItem = items.find(item => item.choice === null);
-        
+        const unselectedItem = items.find(item => !item.choice);
         if (unselectedItem) {
-            // If an unselected item is found, show an error
             const itemNumber = items.indexOf(unselectedItem) + 1;
             errorEl.textContent = `A choice has not been made for item ${itemNumber}.`;
             errorEl.style.display = 'block';
         } else {
-            // If all items have a choice, proceed to the final update
+            // All items reviewed, proceed to the final update screen
             const event = new CustomEvent('change-dashboard-view', {
                 detail: {
-                    viewName: 'progress_screen',
-                    context: { actionType: 'finalUpdate' }
+                    viewName: 'action_finished',
+                    context: {
+                       apiResponse: {
+                           success: true,
+                           data: { message: "All descriptions have been processed." }
+                       }
+                    }
                 },
                 bubbles: true,
                 composed: true
