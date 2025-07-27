@@ -41,10 +41,16 @@ export async function init(status, shadowRoot, viewContext) {
 
             if (featureName === 'aiDescriptions') {
                 nextViewName = 'accept_description'; // Go to review screen after generation
+                // Create a mock response for the mockup
+                nextContext.itemsToReview = [
+                    { id: 1, generatedDescription: 'This is a mock AI description for item 1.' },
+                    { id: 2, generatedDescription: 'This is another mock AI description for item 2.' },
+                    { id: 3, generatedDescription: 'A third mock description to review.' }
+                ];
             } else {
                 nextViewName = 'action_finished'; // Go straight to finished screen for other features
             }
-            nextContext = { apiResponse: response };
+            nextContext.apiResponse = response;
         }
         
         const event = new CustomEvent('change-dashboard-view', {

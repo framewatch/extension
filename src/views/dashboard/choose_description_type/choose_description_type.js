@@ -4,8 +4,16 @@ export function init(status, shadowRoot, viewContext) {
 
     proceedBtn?.addEventListener('click', () => {
         // Find the selected radio button
-        const selectedType = shadowRoot.querySelector('input[name="desc_type"]:checked').value;
+        const selectedRadio = shadowRoot.querySelector('input[name="desc_type"]:checked');
         
+        // --- FIX: Ensure a radio button is selected ---
+        if (!selectedRadio) {
+            // In a real app, you might want to show an error message to the user here.
+            console.error("No description type selected.");
+            return; 
+        }
+        const selectedType = selectedRadio.value;
+
         // Navigate to the item selection screen, passing the chosen type in the context
         const event = new CustomEvent('change-dashboard-view', {
             detail: {

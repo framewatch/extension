@@ -31,8 +31,15 @@ export function init(status, shadowRoot, viewContext) {
         };
 
         if (offerCheckbox.checked) {
+            const selectedOfferTypeRadio = shadowRoot.querySelector('input[name="offer_type"]:checked');
+            // --- FIX: Ensure an offer type is selected ---
+            if (!selectedOfferTypeRadio) {
+                console.error("Offer checkbox is checked, but no offer type is selected.");
+                // Optionally, show an error to the user in the UI.
+                return;
+            }
             settings.offer = {
-                type: shadowRoot.querySelector('input[name="offer_type"]:checked').value,
+                type: selectedOfferTypeRadio.value,
                 value: shadowRoot.getElementById('offer-value').value
             };
         }

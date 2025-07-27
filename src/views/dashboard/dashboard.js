@@ -80,9 +80,9 @@ export function init(status, shadowRoot) {
         else if (viewName === 'select_items' && context.featureName) newTitle = 'Select Items';
         else if (viewName === 'choose_description_type') newTitle = 'Choose Style';
         else if (viewName === 'start_message') newTitle = 'Auto Message';
-        else if (viewName === 'start_action_generic' && context.featureName) {
-                newTitle = context.featureName === 'autoLikes' ? 'Auto Like' : 'Auto Follow';
-        }
+        else if (viewName === 'start_auto_like') newTitle = 'Auto Like';
+        else if (viewName === 'start_auto_follow') newTitle = 'Auto Follow';
+        
         titleEl.textContent = newTitle;
 
 

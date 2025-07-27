@@ -1,4 +1,3 @@
-
 // src/views/dashboard/main_features/main_features.js
 export function init(status, shadowRoot, viewContext) {
     // Handle navigation to the Account page
@@ -21,8 +20,10 @@ export function init(status, shadowRoot, viewContext) {
                 nextViewName = 'choose_description_type';
             } else if (featureName === 'autoMessages') {
                 nextViewName = 'start_message';
-            } else if (featureName === 'autoLikes' || featureName === 'autoFollows') {
-                nextViewName = 'start_action_generic';
+            } else if (featureName === 'autoLikes') {
+                nextViewName = 'start_auto_like';
+            } else if (featureName === 'autoFollows') {
+                nextViewName = 'start_auto_follow';
             } else {
                 // Default for 'refreshes' or any other feature that needs item selection
                 nextViewName = 'select_items';
