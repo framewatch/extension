@@ -1,127 +1,140 @@
 // src/content.js
 
 (async () => {
-    // This will hold the function that updates the UI, so the message listener can call it.
-    let uiUpdater = null;
+    // This flag prevents the entire script from running more than once.
+    if (window.myVintedAppInitialized) {
+        return;
+    }
+    window.myVintedAppInitialized = true;
 
-    // --- A. SET UP THE SINGLE MESSAGE LISTENER ---
-    // We set this up only once to avoid duplicate listeners on re-injection.
+    // --- 1. DEFINE AND MANAGE ALL APP ELEMENTS ---
+    let appHost;
+    let reopenBtnHost; // A separate host for the button
+
+    function createElements() {
+        // --- Main App Window ---
+        if (!document.getElementById('my-auth-extension-container')) {
+            appHost = document.createElement('div');
+            appHost.id = 'my-auth-extension-container';
+            document.body.prepend(appHost);
+        } else {
+            appHost = document.getElementById('my-auth-extension-container');
+        }
+
+        // --- Reopen Button Host and its Shadow DOM ---
+        if (!document.getElementById('my-reopen-btn-container')) {
+            reopenBtnHost = document.createElement('div');
+            reopenBtnHost.id = 'my-reopen-btn-container';
+            document.body.appendChild(reopenBtnHost);
+
+            // Create a Shadow DOM for the button to isolate its styles
+            const buttonShadowRoot = reopenBtnHost.attachShadow({ mode: 'open' });
+
+            // Link the same stylesheet inside the button's Shadow DOM
+            const buttonStyleLink = document.createElement('link');
+            buttonStyleLink.rel = 'stylesheet';
+            buttonStyleLink.href = chrome.runtime.getURL('styles/main.css');
+            buttonShadowRoot.appendChild(buttonStyleLink);
+
+            // Create the actual button and place it inside its Shadow DOM
+            const reopenBtn = document.createElement('button');
+            reopenBtn.id = 'reopen-app-btn';
+            reopenBtn.innerHTML = `<svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: white;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>`;
+            buttonShadowRoot.appendChild(reopenBtn);
+
+            // Add the click listener to the button
+            reopenBtn.onclick = () => {
+                appHost.style.display = 'block';
+                reopenBtnHost.style.display = 'none';
+            };
+        } else {
+            reopenBtnHost = document.getElementById('my-reopen-btn-container');
+        }
+
+        // Initially hide the reopen button's host
+        reopenBtnHost.style.display = 'none';
+
+        // Add the listener for the 'close-app' event from the main app
+        appHost.addEventListener('close-app', () => {
+            appHost.style.display = 'none';
+            reopenBtnHost.style.display = 'block';
+        });
+    }
+
+    createElements(); // Initial creation
+
+    // --- 2. SETUP THE MAIN APP'S SHADOW DOM AND UI ---
+    const shadowRoot = appHost.attachShadow({ mode: 'open' });
+    const styleLink = document.createElement('link');
+    styleLink.rel = 'stylesheet';
+    styleLink.href = chrome.runtime.getURL('styles/main.css');
+    shadowRoot.appendChild(styleLink);
+
+    const appContainer = document.createElement('div');
+    appContainer.id = 'auth-app-content-wrapper';
+    shadowRoot.appendChild(appContainer);
+
+    const loadView = async (viewName, status) => {
+        try {
+            appContainer.innerHTML = '<div id="auth-app-content"><p>Loading...</p></div>';
+            const viewHtmlUrl = chrome.runtime.getURL(`src/views/${viewName}/${viewName}.html`);
+            const response = await fetch(viewHtmlUrl);
+            if (!response.ok) throw new Error(`Failed to fetch ${viewName}.html: ${response.statusText}`);
+            appContainer.innerHTML = await response.text();
+
+            const viewJsUrl = chrome.runtime.getURL(`src/views/${viewName}/${viewName}.js`);
+            const viewModule = await import(viewJsUrl);
+            if (viewModule && typeof viewModule.init === 'function') {
+                viewModule.init(status, shadowRoot);
+            }
+        } catch (error) {
+            console.error(`Error loading view ${viewName}:`, error);
+            appContainer.innerHTML = `<div id="auth-app-content"><p class="error">Error loading view. Please refresh.</p></div>`;
+        }
+    };
+
+    // --- 3. UI ROUTER AND STATE MANAGEMENT ---
+    let uiUpdater = (status) => {
+        if (!status || !status.user) {
+            loadView('login', status);
+            return;
+        }
+        if (status.isEmailVerified === false) {
+            loadView('verify_email', status);
+        } else if (status.isSubscribed === false && status.hasHadTrial === false) {
+            loadView('start_trial', status);
+        } else if (status.isSubscribed === false && status.hasHadTrial === true) {
+            loadView('no_subscription', status);
+        } else if (status.isVintedVerified === false) {
+            loadView('verify_account', status);
+        } else {
+            loadView('dashboard', status);
+        }
+    };
+
+    appHost.addEventListener('auth-state-update', (e) => {
+        uiUpdater(e.detail);
+    });
+
     chrome.runtime.onMessage.addListener((message) => {
         if (message.type === 'USER_STATUS_CHANGED' && typeof uiUpdater === 'function') {
             uiUpdater(message.payload);
         }
     });
 
-    const initializeApp = async () => {
-        // --- 0. PREVENT DUPLICATE INJECTION ---
-        // If the app container already exists, don't do anything.
-        if (document.getElementById('my-auth-extension-container')) {
-            return;
-        }
+    try {
+        const initialStatus = await chrome.runtime.sendMessage({ type: 'GET_USER_STATUS' });
+        uiUpdater(initialStatus);
+    } catch (error) {
+        console.warn("Could not get initial status. This is often normal on first load.", error.message);
+        appContainer.innerHTML = `<div id="auth-app-content"><p class="error">Could not connect to services. Please refresh the page.</p></div>`;
+    }
 
-        // --- 1. INJECT APP CONTAINER AND CREATE SHADOW ROOT ---
-        const appHost = document.createElement('div');
-        appHost.id = 'my-auth-extension-container';
-        document.body.prepend(appHost);
-
-        const shadowRoot = appHost.attachShadow({ mode: 'open' });
-
-        const styleLink = document.createElement('link');
-        styleLink.rel = 'stylesheet';
-        styleLink.href = chrome.runtime.getURL('styles/main.css');
-        shadowRoot.appendChild(styleLink);
-
-        const appContainer = document.createElement('div');
-        appContainer.id = 'auth-app-content-wrapper';
-        shadowRoot.appendChild(appContainer);
-
-
-        // --- 2. DYNAMIC VIEW LOADER (ADAPTED FOR SHADOW DOM) ---
-        const loadView = async (viewName, status) => {
-            try {
-                appContainer.innerHTML = '<div id="auth-app-content"><p>Loading...</p></div>';
-
-                const viewHtmlUrl = chrome.runtime.getURL(`src/views/${viewName}/${viewName}.html`);
-                const response = await fetch(viewHtmlUrl);
-                if (!response.ok) throw new Error(`Failed to fetch ${viewName}.html: ${response.statusText}`);
-                
-                appContainer.innerHTML = await response.text();
-
-                const viewJsUrl = chrome.runtime.getURL(`src/views/${viewName}/${viewName}.js`);
-                const viewModule = await import(viewJsUrl);
-                if (viewModule && typeof viewModule.init === 'function') {
-                    viewModule.init(status, shadowRoot);
-                }
-            } catch (error) {
-                console.error(`Error loading view ${viewName}:`, error);
-                appContainer.innerHTML = `<div id="auth-app-content"><p class="error">Error loading view. Please refresh.</p></div>`;
-            }
-        };
-
-        // --- 3. UI ROUTER ---
-        const updateUserInterface = (status) => {
-            if (!status || !status.user) {
-                loadView('login', status);
-                return;
-            }
-            if (status.isEmailVerified === false) {
-                loadView('verify_email', status);
-            } else if (status.isSubscribed === false && status.hasHadTrial === false) {
-                loadView('start_trial', status);
-            } else if (status.isSubscribed === false && status.hasHadTrial === true) {
-                loadView('no_subscription', status);
-            } else if (status.isVintedVerified === false) {
-                loadView('verify_account', status);
-            } else {
-                loadView('dashboard', status);
-            }
-        };
-
-        // Assign the UI update function to the outer scope variable.
-        uiUpdater = updateUserInterface;
-      
-        // --- 4. LISTENERS & INITIALIZATION ---
-        appHost.addEventListener('auth-state-update', (e) => {
-            updateUserInterface(e.detail);
-        });
-
-        try {
-            const initialStatus = await chrome.runtime.sendMessage({ type: 'GET_USER_STATUS' });
-            updateUserInterface(initialStatus);
-        } catch (error) {
-            console.warn("Could not get initial status. This is often normal on first load.", error.message);
-        }
-
-        // --- 5. OBSERVE AND RE-INJECT IF REMOVED ---
-        const observer = new MutationObserver((mutations, obs) => {
-            const appRemoved = mutations.some(mutation => 
-                Array.from(mutation.removedNodes).some(node => node.id === 'my-auth-extension-container')
-            );
-
-            if (appRemoved) {
-                console.log("Auth extension container removed via MutationObserver, re-injecting...");
-                obs.disconnect(); // Stop observing before re-injecting
-                initializeApp(); // Re-initialize the app
-            }
-        });
-
-        observer.observe(document.body, {
-            childList: true,
-            subtree: false // We only care about direct children of the body
-        });
-    };
-
-    // --- 6. PERIODIC CHECK (FALLBACK MECHANISM) ---
-    // This will run every 2 seconds to ensure the app is always present,
-    // acting as a backup for the MutationObserver.
+    // --- 4. FALLBACK/HEALING LOGIC ---
     setInterval(() => {
-        if (!document.getElementById('my-auth-extension-container')) {
-            console.log('Auth extension container not found, re-injecting via setInterval.');
-            initializeApp();
+        if (!document.getElementById('my-auth-extension-container') || !document.getElementById('my-reopen-btn-container')) {
+            console.log('Extension element missing, re-creating...');
+            createElements();
         }
-    }, 2000); // Check every 2 seconds
-
-
-    // Initial load of the app
-    initializeApp();
+    }, 2000);
 })();

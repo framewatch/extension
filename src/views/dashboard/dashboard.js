@@ -36,11 +36,13 @@ export function init(status, shadowRoot) {
         shadowRoot.dispatchEvent(event);
     });
     
+    // --- UPDATED: Dispatch an event on close ---
     closeBtn.addEventListener('click', () => {
-        const appHost = shadowRoot.host;
-        if (appHost) {
-            appHost.style.display = 'none';
-        }
+        const event = new CustomEvent('close-app', {
+            bubbles: true,
+            composed: true
+        });
+        closeBtn.dispatchEvent(event);
     });
 
     // Load the main features view by default
