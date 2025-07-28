@@ -1,4 +1,4 @@
-// src/views/verify_account/verify_account.js
+import { getFriendlyErrorMessage } from '../../error-dictionary.js';
 
 export function init(status, shadowRoot) {
     const linkBtn = shadowRoot.getElementById('link-account-btn');
@@ -13,7 +13,7 @@ async function handleLinkAccount(shadowRoot) {
     const messageBox = shadowRoot.getElementById('verify-message-box');
 
     if (!window.location.href.includes('/member/')) {
-        messageBox.textContent = "Error: Please navigate to your Vinted profile page first.";
+        messageBox.textContent = getFriendlyErrorMessage('vinted-profile-required');
         messageBox.className = 'feedback error';
         messageBox.style.display = 'block';
         return;
@@ -23,7 +23,7 @@ async function handleLinkAccount(shadowRoot) {
     const vintedUsername = urlParts.pop() || urlParts.pop();
 
     if (!vintedUsername) {
-        messageBox.textContent = "Error: Could not find Vinted username in the URL.";
+        messageBox.textContent = getFriendlyErrorMessage('vinted-username-not-found');
         messageBox.className = 'feedback error';
         messageBox.style.display = 'block';
         return;
@@ -47,13 +47,14 @@ async function handleLinkAccount(shadowRoot) {
         linkBtn.dispatchEvent(event);
 
     } else {
-        messageBox.textContent = `Error: ${response.error}`;
+        messageBox.textContent = response.error;
         messageBox.className = 'feedback error';
         messageBox.style.display = 'block';
         linkBtn.disabled = false;
         linkBtn.textContent = 'Link My Vinted Account';
     }
 }
+// ... handleLogout remains the same
 
 async function handleLogout(shadowRoot) {
     const logoutBtn = shadowRoot.getElementById('logout-btn-verify');

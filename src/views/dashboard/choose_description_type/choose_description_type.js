@@ -1,3 +1,4 @@
+
 // src/views/dashboard/choose_description_type/choose_description_type.js
 export function init(status, shadowRoot, viewContext) {
     const proceedBtn = shadowRoot.getElementById('proceed-to-select-items-btn');

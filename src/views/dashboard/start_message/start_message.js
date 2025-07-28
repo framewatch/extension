@@ -1,3 +1,6 @@
+import { getFriendlyErrorMessage } from '../../../error-dictionary.js';
+
+
 // src/views/dashboard/start_message/start_message.js
 export function init(status, shadowRoot, viewContext) {
     const startBtn = shadowRoot.getElementById('start-auto-message-btn');
@@ -15,7 +18,7 @@ export function init(status, shadowRoot, viewContext) {
     startBtn?.addEventListener('click', () => {
         // --- NEW: Validation Check ---
         if (messageText.value.trim() === '') {
-            messageError.textContent = 'Message cannot be empty.';
+            messageError.textContent = getFriendlyErrorMessage('message-cannot-be-empty');
             messageError.style.display = 'block';
             return; // Stop the function
         }
@@ -43,7 +46,7 @@ export function init(status, shadowRoot, viewContext) {
                 value: shadowRoot.getElementById('offer-value').value
             };
         }
-
+        startBtn.disabled = true;
         // Navigate to the active screen
         const event = new CustomEvent('change-dashboard-view', {
             detail: {

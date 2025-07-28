@@ -1,5 +1,5 @@
-// src/views/verify_email/verify_email.js
 
+import { getFriendlyErrorMessage } from '../../error-dictionary.js';
 export function init(status, shadowRoot) {
     const emailDisplay = shadowRoot.getElementById('user-email-display');
     if (emailDisplay && status.user) {
@@ -16,6 +16,9 @@ export function init(status, shadowRoot) {
     logoutBtn?.addEventListener('click', () => handleLogout(shadowRoot));
 }
 
+
+
+
 async function handleCheckVerification(shadowRoot) {
     const checkBtn = shadowRoot.getElementById('check-verification-btn');
     const messageBox = shadowRoot.getElementById('email-message-box');
@@ -30,7 +33,7 @@ async function handleCheckVerification(shadowRoot) {
     checkBtn.dispatchEvent(event);
 
     if (!latestStatus.isEmailVerified) {
-        messageBox.textContent = "Email not verified yet. Please check your inbox and try again.";
+        messageBox.textContent = getFriendlyErrorMessage('email-not-verified');
         messageBox.className = 'feedback error';
         messageBox.style.display = 'block';
         checkBtn.disabled = false;
@@ -50,10 +53,11 @@ async function handleResendEmail(e, shadowRoot) {
     if (response.success) {
         messageBox.textContent = 'New verification email sent!';
     } else {
-        messageBox.textContent = `Error: ${response.error}`;
+        messageBox.textContent = response.error;
         messageBox.className = 'feedback error';
     }
 }
+
 
 async function handleLogout(shadowRoot) {
     const logoutBtn = shadowRoot.getElementById('logout-btn-email');

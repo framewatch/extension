@@ -1,3 +1,5 @@
+import { getFriendlyErrorMessage } from '../../../error-dictionary.js';
+
 // src/views/dashboard/select_items/select_items.js
 export function init(status, shadowRoot, viewContext) {
     const titleEl = shadowRoot.getElementById('select-items-title');
@@ -45,7 +47,7 @@ export function init(status, shadowRoot, viewContext) {
         
         // --- NEW: Validation Check ---
         if (selectedItemIds.length === 0) {
-            errorEl.textContent = 'Please select at least one item.';
+            errorEl.textContent = getFriendlyErrorMessage('no-item-selected');
             errorEl.style.display = 'block';
             return; // Stop the function
         }
@@ -54,6 +56,8 @@ export function init(status, shadowRoot, viewContext) {
         errorEl.style.display = 'none';
 
         console.log('Selected item IDs:', selectedItemIds);
+
+        performBtn.disabled = true;
 
         const event = new CustomEvent('change-dashboard-view', {
             detail: {

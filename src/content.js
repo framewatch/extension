@@ -39,6 +39,8 @@
         // --- 2. DYNAMIC VIEW LOADER (ADAPTED FOR SHADOW DOM) ---
         const loadView = async (viewName, status) => {
             try {
+                appContainer.innerHTML = '<div id="auth-app-content"><p>Loading...</p></div>';
+
                 const viewHtmlUrl = chrome.runtime.getURL(`src/views/${viewName}/${viewName}.html`);
                 const response = await fetch(viewHtmlUrl);
                 if (!response.ok) throw new Error(`Failed to fetch ${viewName}.html: ${response.statusText}`);

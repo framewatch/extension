@@ -1,15 +1,10 @@
-
-// src/views/login/login.js
+import { getFriendlyErrorMessage } from '../../error-dictionary.js';
 
 export function init(status, shadowRoot) {
     const loginBtn = shadowRoot.getElementById('login-btn');
-    if (loginBtn) {
-        // Use an arrow function to pass shadowRoot to the handler
-        loginBtn.addEventListener('click', () => handleLogin(shadowRoot));
-    }
+    loginBtn?.addEventListener('click', () => handleLogin(shadowRoot));
 }
 
-// The function now accepts shadowRoot as an argument
 async function handleLogin(shadowRoot) {
     const emailInput = shadowRoot.getElementById('email-input');
     const passwordInput = shadowRoot.getElementById('password-input');
@@ -20,7 +15,7 @@ async function handleLogin(shadowRoot) {
     const password = passwordInput.value;
 
     if (!email || !password) {
-        errorEl.textContent = "Please enter email and password.";
+        errorEl.textContent = getFriendlyErrorMessage('all-fields-required');
         errorEl.style.display = 'block';
         return;
     }
@@ -34,10 +29,9 @@ async function handleLogin(shadowRoot) {
     if (response.success) {
         const event = new CustomEvent('auth-state-update', {
             detail: response.status,
-            bubbles: true, // Let the event bubble up
-            composed: true // Let the event cross the shadow DOM boundary
+            bubbles: true,
+            composed: true
         });
-        // Dispatch the event from an element *inside* the shadow DOM
         loginBtn.dispatchEvent(event);
     } else {
         errorEl.textContent = response.error;

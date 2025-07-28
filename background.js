@@ -1,10 +1,14 @@
+
+
+
 // background.js - Service Worker (Manifest V3 Module)
 
-// --- 1. IMPORT FIREBASE SDKs ---
+// --- 1. IMPORT FIREBASE SDKs AND ERROR DICTIONARY---
 import "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js";
 import "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js";
 import "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js";
 import "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js";
+import { getFriendlyErrorMessage } from './src/error-dictionary.js';
 
 // --- 2. INITIALIZE FIREBASE ---
 const firebaseConfig = {
@@ -34,6 +38,8 @@ try {
 } catch(e) {
     console.error("Error during Firebase initialization:", e);
 }
+
+
 
 // --- 3. MANAGE USER STATE ---
 let userStatus = { user: null, isEmailVerified: false, isSubscribed: false, isVintedVerified: false, hasHadTrial: false, role: null };
@@ -131,11 +137,10 @@ if (auth) {
     });
 }
 
-
-// --- 4. LISTEN FOR MESSAGES ---
+// --- 4. LISTEN FOR MESSAGES (UPDATED) ---
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (!auth) {
-      sendResponse({ success: false, error: "Firebase not initialized." });
+      sendResponse({ success: false, error: getFriendlyErrorMessage('firebase-not-initialized') });
       return true;
     }
 
@@ -143,12 +148,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         let status;
         switch (message.type) {
             case 'GET_USER_STATUS':
-                // Forcing a refresh is good practice for critical UI loads.
                 if (message.forceRefresh && auth.currentUser) {
                     status = await buildUserStatus(auth.currentUser);
-                    userStatus = status; // Update the central status
+                    userStatus = status;
                 } else {
-                    status = userStatus; // Otherwise, send the latest known status
+                    status = userStatus;
                 }
                 sendResponse(status);
                 break;
@@ -157,8 +161,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             case 'LOGOUT':
             case 'START_FREE_TRIAL':
             case 'LINK_VINTED_ACCOUNT':
-                // For all auth-related actions, we let onAuthStateChanged and the listener handle the status update.
-                // We just need to perform the action and send back a success/error message.
                 try {
                     let responseData = { success: true };
                     if (message.type === 'LOGIN') {
@@ -172,11 +174,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         const linkVintedAccount = functions.httpsCallable('linkVintedAccount');
                         await linkVintedAccount({ vintedUsername: message.payload.vintedUsername });
                     }
-                    // We can rebuild status here to ensure the response is immediate
                     responseData.status = await buildUserStatus(auth.currentUser);
                     sendResponse(responseData);
                 } catch (error) {
-                    sendResponse({ success: false, error: error.message });
+                    sendResponse({ success: false, error: getFriendlyErrorMessage(error.code || error.message) });
                 }
                 break;
 
@@ -186,29 +187,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     const result = await useFeature({ feature: message.payload.featureName });
                     sendResponse({ success: true, data: result.data });
                 } catch (error) {
-                    // ** IMPORTANT ** If the backend denies permission, refresh the UI state
                     if (error.code === 'functions/permission-denied') {
-                        console.log("Permission denied by backend. Forcing a status refresh.");
                         buildUserStatus(auth.currentUser).then(newStatus => {
                            userStatus = newStatus;
                            broadcastStatusUpdate(userStatus);
                         });
                     }
-                    sendResponse({ success: false, error: error.message });
+                    sendResponse({ success: false, error: getFriendlyErrorMessage(error.code || error.message) });
                 }
                 break;
             
-            // The SEND_VERIFICATION_EMAIL case can remain as it was.
             case 'SEND_VERIFICATION_EMAIL':
                  try {
                     await auth.currentUser.sendEmailVerification();
                     sendResponse({ success: true });
                 } catch (error) {
-                    sendResponse({ success: false, error: error.message });
+                    sendResponse({ success: false, error: getFriendlyErrorMessage(error.code || error.message) });
                 }
                 break;
         }
     })();
 
-    return true; // Keep message channel open for async response
+    return true;
 });

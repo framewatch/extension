@@ -1,3 +1,4 @@
+
 // src/views/dashboard/main_features/main_features.js
 export function init(status, shadowRoot, viewContext) {
     // Handle navigation to the Account page

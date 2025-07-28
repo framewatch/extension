@@ -1,3 +1,5 @@
+import { getFriendlyErrorMessage } from '../../../error-dictionary.js';
+
 export function init(status, shadowRoot, viewContext) {
     const { featureName } = viewContext;
 
@@ -10,19 +12,27 @@ export function init(status, shadowRoot, viewContext) {
         const targetValue = targetInput.value.trim();
         const quantityValue = quantityInput.value;
 
-        if (!targetValue || !quantityValue) {
-            errorEl.textContent = 'All fields are required.';
+        errorEl.style.display = 'none'; // Clear previous errors
+        
+        if (!targetValue) {
+            errorEl.textContent = getFriendlyErrorMessage('enter-username-or-keyword');
             errorEl.style.display = 'block';
             return;
         }
         
-        errorEl.style.display = 'none';
+        if (!quantityValue) {
+            errorEl.textContent = getFriendlyErrorMessage('specify-quantity');
+            errorEl.style.display = 'block';
+            return;
+        }
 
         const settings = {
             targetType: 'keyword', // Hardcoded
             targetValue: targetValue,
             quantity: quantityValue
         };
+
+        startBtn.disabled = true;
 
         const event = new CustomEvent('change-dashboard-view', {
             detail: {
