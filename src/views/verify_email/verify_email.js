@@ -1,4 +1,3 @@
-
 import { getFriendlyErrorMessage } from '../../error-dictionary.js';
 export function init(status, shadowRoot) {
     const emailDisplay = shadowRoot.getElementById('user-email-display');
@@ -14,8 +13,16 @@ export function init(status, shadowRoot) {
 
     const logoutBtn = shadowRoot.getElementById('logout-btn-email');
     logoutBtn?.addEventListener('click', () => handleLogout(shadowRoot));
-}
 
+    const closeBtn = shadowRoot.getElementById('close-btn-verify-email');
+    closeBtn?.addEventListener('click', () => {
+        const event = new CustomEvent('close-app', {
+            bubbles: true,
+            composed: true
+        });
+        closeBtn.dispatchEvent(event);
+    });
+}
 
 
 

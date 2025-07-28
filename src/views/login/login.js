@@ -3,6 +3,15 @@ import { getFriendlyErrorMessage } from '../../error-dictionary.js';
 export function init(status, shadowRoot) {
     const loginBtn = shadowRoot.getElementById('login-btn');
     loginBtn?.addEventListener('click', () => handleLogin(shadowRoot));
+
+    const closeBtn = shadowRoot.getElementById('close-btn-login');
+    closeBtn?.addEventListener('click', () => {
+        const event = new CustomEvent('close-app', {
+            bubbles: true,
+            composed: true
+        });
+        closeBtn.dispatchEvent(event);
+    });
 }
 
 async function handleLogin(shadowRoot) {

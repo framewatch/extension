@@ -177,6 +177,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     responseData.status = await buildUserStatus(auth.currentUser);
                     sendResponse(responseData);
                 } catch (error) {
+                     // --- START DEBUGGING LOGS ---
+                     console.log("--- Firebase Function Error Debug ---");
+                     console.log("Full error object:", error);
+                     console.log("error.code:", error.code);
+                     console.log("error.message:", error.message);
+                     console.log("error.details:", error.details);
+                     console.log("error.status (custom check):", error.status);
+                     // --- END DEBUGGING LOGS ---
+
                     sendResponse({ success: false, error: getFriendlyErrorMessage(error.code || error.message) });
                 }
                 break;

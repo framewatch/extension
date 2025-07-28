@@ -1,8 +1,16 @@
 // src/views/no_subscription/no_subscription.js
-
 export function init(status, shadowRoot) {
     const logoutBtn = shadowRoot.getElementById('logout-btn-no-sub');
     logoutBtn?.addEventListener('click', () => handleLogout(shadowRoot));
+
+    const closeBtn = shadowRoot.getElementById('close-btn-no-sub');
+    closeBtn?.addEventListener('click', () => {
+        const event = new CustomEvent('close-app', {
+            bubbles: true,
+            composed: true
+        });
+        closeBtn.dispatchEvent(event);
+    });
 }
 
 async function handleLogout(shadowRoot) {

@@ -6,6 +6,15 @@ export function init(status, shadowRoot) {
 
     const logoutBtn = shadowRoot.getElementById('logout-btn-verify');
     logoutBtn?.addEventListener('click', () => handleLogout(shadowRoot));
+
+    const closeBtn = shadowRoot.getElementById('close-btn-verify-account');
+    closeBtn?.addEventListener('click', () => {
+        const event = new CustomEvent('close-app', {
+            bubbles: true,
+            composed: true
+        });
+        closeBtn.dispatchEvent(event);
+    });
 }
 
 async function handleLinkAccount(shadowRoot) {

@@ -11,6 +11,15 @@ export function init(status, shadowRoot) {
 
     const logoutBtn = shadowRoot.getElementById('logout-btn-trial');
     logoutBtn?.addEventListener('click', () => handleLogout(shadowRoot));
+
+    const closeBtn = shadowRoot.getElementById('close-btn-trial');
+    closeBtn?.addEventListener('click', () => {
+        const event = new CustomEvent('close-app', {
+            bubbles: true,
+            composed: true
+        });
+        closeBtn.dispatchEvent(event);
+    });
 }
 
 async function handleStartTrial(shadowRoot) {

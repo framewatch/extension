@@ -12,6 +12,10 @@ export const errorDictionary = {
     'functions/permission-denied': 'Your current plan does not permit this action. Please upgrade.',
     'functions/internal': 'The server encountered an internal error. Please try again later.',
     'functions/unavailable': 'The service is currently unavailable. Please try again later.',
+    'functions/already-exists': 'This vinted account is already connected to other e-mail',
+    'functions/unauthenticated': 'Authentication required to start a trial.',
+    'functions/already-exists-trial': 'You have already had a free trial',
+
 
     // User Input & Validation Errors
     'all-fields-required': 'All fields are required. Please fill them out.',
