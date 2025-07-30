@@ -1,6 +1,7 @@
 // src/content.js
-
 (async () => {
+    console.log("CONTENT: Script injected and running."); // <-- ADD THIS LOG
+
     // This flag prevents the entire script from running more than once.
     if (window.myVintedAppInitialized) {
         return;
@@ -72,11 +73,13 @@
 
     const appContainer = document.createElement('div');
     appContainer.id = 'auth-app-content-wrapper';
+    // **MODIFIED**: Start with a loading message immediately.
+    appContainer.innerHTML = '<div id="auth-app-content"><p>Loading...</p></div>';
     shadowRoot.appendChild(appContainer);
 
     const loadView = async (viewName, status) => {
         try {
-            appContainer.innerHTML = '<div id="auth-app-content"><p>Loading...</p></div>';
+            // **MODIFIED**: The container is cleared and replaced, so the loading message is temporary.
             const viewHtmlUrl = chrome.runtime.getURL(`src/views/${viewName}/${viewName}.html`);
             const response = await fetch(viewHtmlUrl);
             if (!response.ok) throw new Error(`Failed to fetch ${viewName}.html: ${response.statusText}`);
@@ -122,13 +125,21 @@
         }
     });
 
+    // **MODIFIED**: The initial status check is now the single source of truth for the first load.
     try {
-        const initialStatus = await chrome.runtime.sendMessage({ type: 'GET_USER_STATUS' });
+        console.log("CONTENT: Sending GET_USER_STATUS message to background."); // <-- ADD THIS LOG
+
+        // MODIFIED: Added forceRefresh: true to the initial status request.
+        const initialStatus = await chrome.runtime.sendMessage({ type: 'GET_USER_STATUS', forceRefresh: true });
+        console.log("CONTENT: Received initial status from background:", initialStatus);
+
         uiUpdater(initialStatus);
     } catch (error) {
+
         console.warn("Could not get initial status. This is often normal on first load.", error.message);
         appContainer.innerHTML = `<div id="auth-app-content"><p class="error">Could not connect to services. Please refresh the page.</p></div>`;
     }
+
 
     // --- 4. FALLBACK/HEALING LOGIC ---
     setInterval(() => {

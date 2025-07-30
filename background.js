@@ -1,6 +1,3 @@
-
-
-
 // background.js - Service Worker (Manifest V3 Module)
 
 // --- 1. IMPORT FIREBASE SDKs AND ERROR DICTIONARY---
@@ -39,11 +36,17 @@ try {
     console.error("Error during Firebase initialization:", e);
 }
 
-
-
 // --- 3. MANAGE USER STATE ---
+
+// **NEW**: Create a promise that resolves when the first auth state is known.
+let authReadyResolver;
+const authReadyPromise = new Promise(resolve => {
+    authReadyResolver = resolve;
+});
+
+
 let userStatus = { user: null, isEmailVerified: false, isSubscribed: false, isVintedVerified: false, hasHadTrial: false, role: null };
-let firestoreListener = null; // This will hold the unsubscribe function for our real-time listener.
+let firestoreListener = null;
 
 const serializeUser = (user) => {
     if (!user) return null;
@@ -57,7 +60,7 @@ const broadcastStatusUpdate = (statusToBroadcast = userStatus) => {
                 chrome.tabs.sendMessage(tab.id, {
                     type: 'USER_STATUS_CHANGED',
                     payload: statusToBroadcast
-                }).catch(err => {}); // Ignore errors from tabs without content script
+                }).catch(err => {});
             }
         }
     });
@@ -68,7 +71,7 @@ async function buildUserStatus(user) {
         return { user: null, isEmailVerified: false, isSubscribed: false, isVintedVerified: false, hasHadTrial: false, role: null };
     }
     try {
-        await user.reload(); // Always get the latest auth state
+        await user.reload();
         const freshUser = auth.currentUser;
         if (!freshUser) {
              return { user: null, isEmailVerified: false, isSubscribed: false, isVintedVerified: false, hasHadTrial: false, role: null };
@@ -78,12 +81,10 @@ async function buildUserStatus(user) {
         const stripeRole = idTokenResult.claims.stripeRole || null;
         const isEmailVerified = freshUser.emailVerified;
 
-        // The user's customer document is the single source of truth for subscription status
         const customerRef = db.collection('customers').doc(freshUser.uid);
         const customerDoc = await customerRef.get();
 
         if (!customerDoc.exists) {
-            // This can happen briefly during user initialization
             return { user: serializeUser(freshUser), isEmailVerified, isSubscribed: false, isVintedVerified: false, hasHadTrial: false, role: stripeRole };
         }
         
@@ -91,7 +92,7 @@ async function buildUserStatus(user) {
         const finalStatus = {
             user: serializeUser(freshUser),
             isEmailVerified,
-            isSubscribed: customerData.isSubscribed === true, // Directly use the reliable flag from Firestore
+            isSubscribed: customerData.isSubscribed === true,
             isVintedVerified: !!customerData.vintedInfo,
             hasHadTrial: customerData.hasHadTrial === true,
             role: stripeRole
@@ -107,31 +108,30 @@ async function buildUserStatus(user) {
 
 if (auth) {
     auth.onAuthStateChanged((user) => {
-        // ** CORRECTED REAL-TIME LISTENER LOGIC **
-        // First, always detach any existing listener from the previous user.
         if (firestoreListener) {
-            firestoreListener(); // This function unsubscribes the listener.
+            firestoreListener();
             firestoreListener = null;
         }
 
         if (user && db) {
-            // If a user is logged in, attach a new real-time listener to their document.
             const customerRef = db.collection('customers').doc(user.uid);
             
             firestoreListener = customerRef.onSnapshot(async (doc) => {
                 console.log("Real-time update received! Rebuilding status.");
-                // When the document changes (e.g., `isSubscribed` becomes false),
-                // rebuild the entire status object from the latest data and broadcast it.
                 userStatus = await buildUserStatus(auth.currentUser);
                 broadcastStatusUpdate(userStatus);
+                // **MODIFIED**: Resolve the promise once the first status is built.
+                authReadyResolver();
             }, (error) => {
                 console.error("Firestore listener failed:", error);
+                authReadyResolver(); // Also resolve on error to not block forever
             });
         } else {
-            // If user logged out, create and broadcast a clean, logged-out status.
             buildUserStatus(null).then(status => {
                 userStatus = status;
                 broadcastStatusUpdate(userStatus);
+                // **MODIFIED**: Resolve the promise for a logged-out user.
+                authReadyResolver();
             });
         }
     });
@@ -145,9 +145,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 
     (async () => {
+        // **MODIFIED**: Always wait for the initial auth state to be confirmed
+        // before handling any message that depends on it.
+        await authReadyPromise;
+
         let status;
         switch (message.type) {
             case 'GET_USER_STATUS':
+                // The forceRefresh logic is still useful for subsequent checks.
                 if (message.forceRefresh && auth.currentUser) {
                     status = await buildUserStatus(auth.currentUser);
                     userStatus = status;
@@ -157,6 +162,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 sendResponse(status);
                 break;
 
+            // ... cases for LOGIN, LOGOUT, etc. remain the same
             case 'LOGIN':
             case 'LOGOUT':
             case 'START_FREE_TRIAL':
@@ -177,15 +183,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     responseData.status = await buildUserStatus(auth.currentUser);
                     sendResponse(responseData);
                 } catch (error) {
-                     // --- START DEBUGGING LOGS ---
-                     console.log("--- Firebase Function Error Debug ---");
-                     console.log("Full error object:", error);
-                     console.log("error.code:", error.code);
-                     console.log("error.message:", error.message);
-                     console.log("error.details:", error.details);
-                     console.log("error.status (custom check):", error.status);
-                     // --- END DEBUGGING LOGS ---
-
+                    console.log("--- Firebase Function Error Debug ---", error);
                     sendResponse({ success: false, error: getFriendlyErrorMessage(error.code || error.message) });
                 }
                 break;
@@ -217,5 +215,5 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
     })();
 
-    return true;
+    return true; // Keep the message channel open for the async response
 });
